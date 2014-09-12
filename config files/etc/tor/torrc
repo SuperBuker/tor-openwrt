@@ -1,0 +1,52 @@
+User tor
+RunAsDaemon 1
+PidFile /mnt/usb/tor/pid/tor.pid
+DataDirectory /mnt/usb/tor
+
+# Enable entry and middle relay
+Nickname XXXXXX
+ContactInfo XXXXXX
+ORPort 9001
+DirPort 9030
+BridgeRelay 1
+Exitpolicy reject *:* # disable exit relay
+
+# Control port
+ControlPort 9051
+ControlListenAddress 192.168.2.1
+HashedControlPassword [[[Paste the hashed password]]]
+
+# Entry Relay
+VirtualAddrNetwork 10.192.0.0/10
+AutomapHostsSuffixes .onion,.exit
+AutomapHostsOnResolve 1                                              
+SocksPort 8118 # Enable proxy socks only accesible by the private network 
+SocksListenAddress 192.168.2.1
+TransPort 9040                                                          
+TransListenAddress 192.168.2.1                                          
+DNSPort 9053                                                              
+DNSListenAddress 192.168.2.1
+
+# Limit middle relay shared bandwidth
+RelayBandwidthRate 100 KBytes
+RelayBandwidthBurst 200 KBytes
+
+# GeoIP for stats       
+# DO NOT UNCOMMENT THIS LINE UNTIL GEOIP SUPPORT IS CONFIRMED  
+GeoIPFile /mnt/usb/tor/geoip/geoip
+GeoIPv6File /mnt/usb/tor/geoip/geoip6
+# Logging:
+Log notice file /mnt/usb/tor/log/notice.log
+Log notice syslog
+# Log debug file /var/log/tor-debug.log
+
+# Tweaks
+# Try for at most NUM seconds when building circuits. If the circuit isn't open in that time, give up on it. (Default: 1 minute.)
+CircuitBuildTimeout 5
+# Send a padding cell every N seconds to keep firewalls from closing our connections while Tor is not in use.
+KeepalivePeriod 60
+# Force Tor to consider whether to build a new circuit every NUM seconds.
+NewCircuitPeriod 15
+# How many entry guards should we keep at a time?
+NumEntryGuards 8
+

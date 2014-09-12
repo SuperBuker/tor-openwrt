@@ -1,0 +1,59 @@
+
+config wifi-device 'wlan0'
+	option type 'mac80211'
+	option macaddr '64:70:02:67:73:d9' #Change to your mac
+	option hwmode '11ng'
+	list ht_capab 'LDPC'
+	list ht_capab 'SHORT-GI-20'
+	list ht_capab 'SHORT-GI-40'
+	list ht_capab 'TX-STBC'
+	list ht_capab 'RX-STBC1'
+	list ht_capab 'DSSS_CCK-40'
+	option noscan '1'
+	option country 'ES'
+	option txpower '20'
+	option channel '7'
+	option htmode 'HT40+'
+	option distance '50'
+
+config wifi-iface
+	option device 'wlan0'
+	option network 'lan'
+	option mode 'ap'
+	option ssid 'Private'
+	option encryption 'psk2+ccmp'
+	option key 'YourPass'
+
+config wifi-iface
+	option device 'wlan0'
+	option network 'tor'
+	option mode 'ap'
+	option encryption 'none'
+	option ssid 'The Onion Hotspot'
+	option isolate '1'
+
+config wifi-device 'wlan1'
+	option type 'mac80211'
+	option channel '36'
+	option macaddr '64:70:02:67:73:da' #Change to your mac
+	option hwmode '11na'
+	list ht_capab 'LDPC'
+	list ht_capab 'SHORT-GI-20'
+	list ht_capab 'SHORT-GI-40'
+	list ht_capab 'TX-STBC'
+	list ht_capab 'RX-STBC1'
+	list ht_capab 'DSSS_CCK-40'
+	option txpower '17'
+	option country 'ES'
+	option htmode 'HT40+'
+	option noscan '1'
+	option distance '50'
+
+config wifi-iface
+	option device 'wlan1'
+	option network 'lan'
+	option mode 'ap'
+	option ssid 'Private'
+	option encryption 'psk2+ccmp'
+	option key 'YourPass'
+
