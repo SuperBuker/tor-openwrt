@@ -56,6 +56,258 @@ We also want to implement a middle relay in the same router. The goal of this pr
 
 ### 1.1 Materials ###
 
+We employed a TP-Link WDR4300(Atheros 9344 MIPS, 128MB RAM) plus a usb stick 1GB storage. The internal storage wasn't large enough for Tor so we plugged an usb stick, this tiny piece of hardware doesn't increase the volume and the price of our platform. <br/>
+On the software side we employed OpenWRT Attitude Adjustment and tor 0.2.4.22-1 <br/>
+In one word, we kept simple.
+
 ### 1.2 Development ###
+
+Before we start, we need a commercial router with OpenWRT and a usb stick with a two partitions: the first ext4 and the second swap format. Install the following packages on the router: tor, iptables-mod-nat and iptables-mod-nat-extra, then plug a usb stick.
+
+TOR project. [TOR router set up notes](https://trac.torproject.org/projects/tor/wiki/doc/Torouter/OpenWRT_setup_notes) <br/>
+zBlackhatworld. [Speeding up tor](http://www.blackhatworld.com/blackhat-seo/proxies/3349-speeding-up-tor.html)
+
+Let's configure the Hotspot:
+
+Build a new network,
+
+/etc/config/network <br/>
+```
+config 'interface' 'tor'
+	option proto 'static'
+	option ipaddr '192.168.2.1'
+	option netmask '255.255.255.0'
+```
+
+Configure the DHCP:
+
+/etc/config/dhcp
+```
+config dhcp 'tor'
+	option interface 'tor'
+	option start '100'
+	option limit '50'
+	option leasetime '1h'
+```
+
+Configure the Wireless,
+
+/etc/conf/wireless
+```
+config wifi-device 'wlan0'
+	option type 'mac80211'
+	option macaddr 'XX:XX:XX:XX:XX:XX'
+	option hwmode '11ng'
+	list ht_capab 'LDPC'
+	list ht_capab 'SHORT-GI-20'
+	list ht_capab 'SHORT-GI-40'
+	list ht_capab 'TX-STBC'
+	list ht_capab 'RX-STBC1'
+	list ht_capab 'DSSS_CCK-40'
+	option country 'XX'
+	option txpower '20'
+	option channel 'XX'
+	option htmode 'XX'
+
+config wifi-iface # Private WiFi
+	option device 'wlan0'
+	option network 'lan'
+	option mode 'ap'
+	option ssid 'Private'
+	option encryption 'psk2+ccmp'
+	option key 'XXXXXX'
+
+config wifi-iface # Public WiFi
+	option device 'wlan0'
+	option network 'tor'
+	option mode 'ap'
+	option ssid 'The Onion Hotspot'
+	option encryption 'none'
+	option isolate '1' # Prevent connections between clients
+```
+
+Now clients can connect to the SSID "The Onion Hotspot", the router will give them an IP 192.166.2.[100-149] but they couldn't surf the web.
+
+Configure the Firewall,
+
+/etc/config/firewall
+```
+config zone
+	option name 'tor'
+	option input 'REJECT'
+	option output 'ACCEPT'
+	option forward 'REJECT'
+	option syn_flood '1'
+	option conntrack '1'
+
+config rule
+	option name 'Tor DHCP'
+	option src 'tor'
+	option proto 'udp'
+	option target 'ACCEPT'
+	option dest_port '67'
+
+config rule
+	option name 'Tor Transparent Proxy'
+	option src 'tor'
+	option proto 'tcp'
+	option dest_port '9040' # see /etc/tor/torrc
+	option target 'ACCEPT'
+	option dest_ip '192.168.2.1'
+
+config rule
+	option name 'Tor DNS Proxy'
+	option src 'tor'
+	option proto 'udp'
+	option dest_port '9053' # see /etc/tor/torrc
+	option target 'ACCEPT'
+	option dest_ip '192.168.2.1'
+
+config redirect
+	option target 'DNAT'
+	option name 'Tor Middle Relay ORPort'
+	option src 'wan'
+	option proto 'tcp'
+	option src_dport '9001' # see /etc/tor/torrc
+	option dest_ip '192.168.2.1'
+	option dest_port '9001'
+	option dest 'lan'
+
+config redirect
+	option target 'DNAT'
+	option name 'Tor Middle Relay DirPort'
+	option src 'wan'
+	option proto 'tcp'
+	option src_dport '9030' # see /etc/tor/torrc
+	option dest_ip '192.168.2.1'
+	option dest_port '9030'
+	option dest 'lan'
+```
+
+/etc/firewall.user
+```bash
+iptables -t nat -A PREROUTING -i wlan0-1 -p udp --dport 53 -j REDIRECT --to-port 9053
+iptables -t nat -A PREROUTING -i wlan0-1 -p tcp ! --dport 53 --syn -j REDIRECT --to-port 9040
+```
+
+Configure USB,
+
+/etc/config/fstab
+```
+config global 'automount'
+	option from_fstab '1'
+	option anon_mount '1'
+
+config global 'autoswap'
+	option from_fstab '1'
+	option anon_swap '0'
+
+config mount
+	option target '/mnt/usb'
+	option device '/dev/sda1'
+	option fstype 'ext4'
+	option options 'rw,sync'
+	option enabled '1'
+	option enabled_fsck '1'
+
+config swap
+	option device '/dev/sda2'
+	option enabled '1'
+```
+
+Run the following terminal commmands.
+```bash
+$ mkdir -p /mnt/usb
+$ mount -a
+$ mkdir -p /mnt/usb/tor/{pid,log,geoip}
+```
+
+Configure Tor <br/>
+First generate the hashed control password, run the following command and copy the output.
+```bash
+$ tor --hash-password 'MyPassword'
+```
+
+/etc/tor/torrc
+```
+User tor
+RunAsDaemon 1
+PidFile /mnt/usb/tor/pid/tor.pid
+DataDirectory /mnt/usb/tor
+
+# Enable entry and middle relay
+Nickname XXXXXX
+ContactInfo XXXXXX
+ORPort 9001
+DirPort 9030
+BridgeRelay 1
+Exitpolicy reject *:* # disable exit relay
+
+# Control port
+ControlPort 9051
+ControlListenAddress 192.168.2.1
+HashedControlPassword [[[Paste the hashed password]]]
+
+# Entry Relay
+VirtualAddrNetwork 10.192.0.0/10
+AutomapHostsSuffixes .onion,.exit
+AutomapHostsOnResolve 1                                              
+SocksPort 8118 # Enable proxy socks only accesible by the private network 
+SocksListenAddress 192.168.2.1
+TransPort 9040                                                          
+TransListenAddress 192.168.2.1                                          
+DNSPort 9053                                                              
+DNSListenAddress 192.168.2.1
+
+# Limit middle relay shared bandwidth
+RelayBandwidthRate 100 KBytes
+RelayBandwidthBurst 200 KBytes
+
+# GeoIP for stats       
+# DO NOT UNCOMMENT THIS LINE UNTIL GEOIP SUPPORT IS CONFIRMED  
+GeoIPFile /mnt/usb/tor/geoip/geoip
+GeoIPv6File /mnt/usb/tor/geoip/geoip6
+# Logging:
+Log notice file /mnt/usb/tor/log/notice.log
+Log notice syslog
+# Log debug file /var/log/tor-debug.log
+
+# Tweaks
+# Try for at most NUM seconds when building circuits. If the circuit isn't open in that time, give up on it. (Default: 1 minute.)
+CircuitBuildTimeout 5
+# Send a padding cell every N seconds to keep firewalls from closing our connections while Tor is not in use.
+KeepalivePeriod 60
+# Force Tor to consider whether to build a new circuit every NUM seconds.
+NewCircuitPeriod 15
+# How many entry guards should we keep at a time?
+NumEntryGuards 8
+```
+
+Add GeoIP support
+
+```bash
+$ wget http://eurielec.etsit.upm.es/~buker/Tor-GeoIP/geoip -P /mnt/usb/tor/geoip
+$ wget http://eurielec.etsit.upm.es/~buker/Tor-GeoIP/geoip6 -P /mnt/usb/tor/geoip
+```
+
+We had some troubles with the tor init.d script. In order to fix them we disabled this service and made a custom script.
+
+```bash
+$ /etc/init.d/tor disable
+```
+
+/etc/rc.local
+```bash
+if [ -f /mnt/usb/tor/log/notice.log ]
+then
+    rm /mnt/usb/tor/log/notice.log
+fi
+sleep 30 && tor &
+
+exit 0
+```
+
+Reboot and welcome to the Tor network.<br/<
+The router will take at last 5 minutes to connect to the Tor network.
 
 ### 1.3 Results ###
