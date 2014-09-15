@@ -284,14 +284,12 @@ NumEntryGuards 8
 ```
 
 Add GeoIP support
-
 ```bash
 $ wget http://eurielec.etsit.upm.es/~buker/Tor-GeoIP/geoip -P /mnt/usb/tor/geoip
 $ wget http://eurielec.etsit.upm.es/~buker/Tor-GeoIP/geoip6 -P /mnt/usb/tor/geoip
 ```
 
 We had some troubles with the tor init.d script. In order to fix them we disabled this service and made a custom script.
-
 ```bash
 $ /etc/init.d/tor disable
 ```
@@ -308,6 +306,34 @@ exit 0
 ```
 
 Reboot and welcome to the Tor network.<br/<
-The router will take at last 5 minutes to connect to the Tor network.
+The router will take at least 5 minutes to connect to the Tor network.
 
 ### 1.3 Results ###
+
+After a  week working, these are the stats of the last two days: 
+```
+=>Entry Node: RX: 121.64 MB (1146223 Pkts.) TX: 2.78 GB (2038189 Pkts.)
+=>Middle Node: RX: 2.2 GB TX: 4.7GB
+```
+
+We made a short survey and these are the conclusions:
+Users didn't realize that their traffic is being annonymized but they complained about the bandwidth and the ping of the connection, they felt like surfing through ADSL.
+
+The user experience depends mainly on the congestion of the Tor network: the route made by packets and the server location you want to reach.
+The only way to improve the service is speeding up Tor. Adjusting the configuration in order to build better circuits, adding geoip support, improving router hardware (more RAM and ROM).
+
+![alt text](https://github.com/SuperBuker/tor-openwrt/raw/master/doc/img/torimp.png "Tor network with WIFI hotspot")
+
+## Test ##
+
+Tor process occupy from 70MB to 100MB of 128MB available RAM. Without the Tor process running the operating system and network services use 33MB of RAM, and with Tor running it reaches 122MB of RAM. Realizing that we were near a RAM overflow we decided to use part of the USB storage as swap, fortunately after three days up the system used only 8MB of swap. Even if it's useless, we decided to keep swap as a safety measure.\\
+
+The only traffic allowed on the Tor network is TCP packaged so there is no possibility to run ping or traceroute tests.
+
+After the first test we noticed that the bridge relay only spends up to 80\% of the CPU resources and the bottle neck of the WIFI hotspot is located on the Tor network. In most of the cases, the router handled quite well the WIFI hotspot.
+
+We compared the speed of WIFI connection VS Ethernet connection towards Tor, and we obtained the same values, so we can see that WiFi can afford easily the Tor maximum bandwidth. 
+
+Futhermore we haven't noticed big differences between the connection to the Tor entry node through transparent proxy and proxy socks. That assures a good implementation of the system.
+
+You can see different speed test with iperf here: [Speedtest](https://github.com/SuperBuker/tor-openwrt/blob/master/speedtest/Test.ods)
