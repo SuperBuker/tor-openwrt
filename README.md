@@ -310,7 +310,7 @@ The router will take at least 5 minutes to connect to the Tor network.
 
 ### 1.3 Results ###
 
-After a  week working, these are the stats of the last two days: 
+After a  week working, these are the stats of the last two days:
 ```
 =>Entry Node: RX: 121.64 MB (1146223 Pkts.) TX: 2.78 GB (2038189 Pkts.)
 =>Middle Node: RX: 2.2 GB TX: 4.7GB
@@ -324,9 +324,9 @@ The only way to improve the service is speeding up Tor. Adjusting the configurat
 
 ![alt text](https://github.com/SuperBuker/tor-openwrt/raw/master/doc/img/torimp.png "Tor network with WIFI hotspot")
 
-## Test ##
+## 2. Test ##
 
-Tor process occupy from 70MB to 100MB of 128MB available RAM. Without the Tor process running the operating system and network services use 33MB of RAM, and with Tor running it reaches 122MB of RAM. Realizing that we were near a RAM overflow we decided to use part of the USB storage as swap, fortunately after three days up the system used only 8MB of swap. Even if it's useless, we decided to keep swap as a safety measure.\\
+Tor process occupy from 70MB to 100MB of 128MB available RAM. Without the Tor process running the operating system and network services use 33MB of RAM, and with Tor running it reaches 122MB of RAM. Realizing that we were near a RAM overflow we decided to use part of the USB storage as swap, fortunately after three days up the system used only 8MB of swap. Even if it's useless, we decided to keep swap as a safety measure.
 
 The only traffic allowed on the Tor network is TCP packaged so there is no possibility to run ping or traceroute tests.
 
@@ -337,3 +337,79 @@ We compared the speed of WIFI connection VS Ethernet connection towards Tor, and
 Futhermore we haven't noticed big differences between the connection to the Tor entry node through transparent proxy and proxy socks. That assures a good implementation of the system.
 
 You can see different speed test with iperf here: [Speedtest](https://github.com/SuperBuker/tor-openwrt/blob/master/speedtest/Test.ods)
+
+Starting:
+![alt text](https://github.com/SuperBuker/tor-openwrt/raw/master/doc/img/starting.png "CPU and Memory test: Starting")
+
+Idle:
+![alt text](https://github.com/SuperBuker/tor-openwrt/raw/master/doc/img/starting.png "CPU and Memory test: Idle")
+
+### 2.1 Middle relay bandwidth ###
+
+In our test time (4 days), the middle relay didn't had a relevant cpu uses even if this process requires encryption/decryption of data passing through the relay because our bandwidth limits were very conservatives. Most of time the process was idle and didn't employed cpu cycles because this middle relay had a very limited bandwidth compared to high speed relays.
+
+The bandwidth configuration is the following:
+```
+limit: 800.0 Kb/s, burst: 1.5 Mb/s
+```
+
+The amount of data transmmited in 4 days:
+```
+Stats: Download 548.4MB, Upload 547.2MB
+```
+
+![alt text](https://github.com/SuperBuker/tor-openwrt/raw/master/doc/img/circuithard.png "Middle relay circuits")
+
+### 2.2 WIFI hotspot capacity ###
+
+At present our WiFi isn't encriped because it's purpuse is to be a public WiFi. The only safety measure we have taken is to enable AP isolation, this prevents connections between WiFi clients and possible direct attacks to our users device.
+The connections between the entry relay (our router) and the guard relays chosen are encrypted. 
+Speed Test reports 0,5-6Mbps download and upload bandwidth depending on the congestion on the Tor network.
+After the tests stats of our public WiFi were the following:
+```
+RX: 270.72 MB (1120443 Pkts.) TX: 952.88 MB (1319089 Pkts.)
+```
+WiFi: Maximum Speed
+![alt text](https://github.com/SuperBuker/tor-openwrt/raw/master/doc/img/starting.png "WIFI max speed")
+
+Download test: 275KB/s
+![alt text](https://github.com/SuperBuker/tor-openwrt/raw/master/doc/img/down275.png "Download test: 275KB/s")
+
+Download test: 450KB/s
+![alt text](https://github.com/SuperBuker/tor-openwrt/raw/master/doc/img/down450.png "Download test: 450KB/s")
+
+Download test: 275KB/s
+![alt text](https://github.com/SuperBuker/tor-openwrt/raw/master/doc/img/down600.png "Download test: 600KB/s")
+
+## 3. Concusion ##
+
+When we decided to do this project, we didn't know if it was possible to use a commercial router to do all of these. We knew someone did it before, but they didn't implement both systems together. After our work and testing, we can affirm that is absolutely possible to implement it, the only requeriments is to have a "good" router and compatible with OpenWRT.
+
+Futhermore this implementation may increase easily the number of middle relays of the Tor network, improving network stability, security and troughtput.
+
+The system works as expected. The bandwidth still limited by the Tor network and the hardware isn't a limitation. Sometimes the Tor network hangs and you have to wait until the router rebuilds the circuits, that's why we have improved the circuits rebuild.
+
+Concerning the security issues, Tor had some problems in the past. Someone tried to decipher the communication through our exit node and send it to your destination. In so doing, we can see all data communication. We cannot know who sent the now transparent communication, we only know that we received it from an intermediate TOR node. We can argue that by protecting the communication with the target (eg our bank or our e-mail) with SSL, there is no way for us to get to know the contents of our communications. A security researcher Moxie Marlinspike showed at the last  BlackHat Europe, we can mount a man-in-the-middle attack from our beloved TOR exit server and crack user's SSL communications. <br/>
+Moxie gave a real-time demonstration of this attack that obtained a large number of passwords for all kinds of services from many users whose traffic was going through his TOR node.  <br/>
+So we can see that the very nature of decentralised and distributed communication on the TOR network brings some problems.
+
+## 3.1 "Wifi hotspot with Tor" Security issues ##
+
+The WiFi hotspot is not encrypted because it's the only way to offer a public WiFi.
+Users of this kind of WiFis should encrypt their comunications using https protocol or a VPN, at this time there is no solution to this issue on the network provider side.
+
+In order to make this communication "more" private, we've tried to disable "wifi connections logs" on the router, but actually this didn't provide more security to the users, so we recommend the users that want to get more security to use other way to protect the communications.
+
+When we talked about this with our project supervisor, he suggested us to develop a "tor hotspot client software" that would be able to encrypt the PC-Wifi hotspot communication.
+
+The main problem of any encrypting solution is that they is necessarily an encrypting key/passphrase exchange, this should be done before we cypher the connection. Assuming that there isn't any users registry and in consecuence any possibility of sharing the key before the start of the connection, this should be done just after the connecting request and this packets can be intercepted. In conclusion the connection can be monitorized and decrypted in real time and there is any advantage over a non encrypted network.
+
+![alt text](https://github.com/SuperBuker/tor-openwrt/raw/master/doc/img/torsecurity.png "Tor network with WIFI hotspot security problem")
+
+### 3.2 Middle relay implementation and viability ###
+
+The implementation of the middle relay is quite simple if you have already set up a Tor Hotspot. It needs much more ram than a simple Tor client but the advantage is that your traffic is mixed with the relays one.
+
+A middle relay doesn't have security problem but the configuration is a bit complicated and you could leave a backdoor to your network and that is dangerous.
+
+The more middle relays we have, the better works Tor network does and more secure will be.
