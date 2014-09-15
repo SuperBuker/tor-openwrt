@@ -381,7 +381,7 @@ Download test: 450KB/s
 Download test: 275KB/s
 ![alt text](https://github.com/SuperBuker/tor-openwrt/raw/master/doc/img/down600.png "Download test: 600KB/s")
 
-## 3. Concusion ##
+## 3. Conclusion ##
 
 When we decided to do this project, we didn't know if it was possible to use a commercial router to do all of these. We knew someone did it before, but they didn't implement both systems together. After our work and testing, we can affirm that is absolutely possible to implement it, the only requeriments is to have a "good" router and compatible with OpenWRT.
 
