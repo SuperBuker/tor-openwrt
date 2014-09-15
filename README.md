@@ -1,7 +1,6 @@
 # Implementation of WiFi hotspot and middle relay with anonymity network #
-======================================================================
 
-### Using Tor network on TP-LINK WDR4300 with OpenWRT
+### Using Tor network on TP-LINK WDR4300 with OpenWRT ###
 Run Chen, (run.chen@mail.polimi.it) <br/>
 Jorge Díez de la Fuente, (jorge.diez.delafuente@alumnos.upm.es)
 
