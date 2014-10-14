@@ -53,13 +53,13 @@ We think that we weren't alone with this problem so we tried to keep simple and 
 We also want to implement a middle relay in the same router. The goal of this project is to know if is possible to implement both system together.
 
 
-### 1.1 Materials ###
+### 2.1 Materials ###
 
-We employed a TP-Link WDR4300(Atheros 9344 MIPS, 128MB RAM) plus a usb stick 1GB storage. The internal storage wasn't large enough for Tor so we plugged an usb stick, this tiny piece of hardware doesn't increase the volume and the price of our platform. <br/>
+We employed a TP-Link WDR4300 (Atheros 9344 MIPS, 128MB RAM) plus a usb stick 1GB storage. The internal storage wasn't large enough for Tor so we plugged an usb stick, this tiny piece of hardware doesn't increase the volume and the price of our platform. <br/>
 On the software side we employed OpenWRT Attitude Adjustment and tor 0.2.4.22-1 <br/>
 In one word, we kept simple.
 
-### 1.2 Development ###
+### 2.2 Development ###
 
 Before we start, we need a commercial router with OpenWRT and a usb stick with a two partitions: the first ext4 and the second swap format. Install the following packages on the router: tor, iptables-mod-nat and iptables-mod-nat-extra, then plug a usb stick.
 
@@ -307,7 +307,7 @@ exit 0
 Reboot and welcome to the Tor network.<br/<
 The router will take at least 5 minutes to connect to the Tor network.
 
-### 1.3 Results ###
+### 2.3 Results ###
 
 After a  week working, these are the stats of the last two days:
 ```
@@ -323,7 +323,7 @@ The only way to improve the service is speeding up Tor. Adjusting the configurat
 
 ![alt text](https://github.com/SuperBuker/tor-openwrt/raw/master/doc/img/torimp.png "Tor network with WIFI hotspot")
 
-## 2. Test ##
+## 3. Test ##
 
 Tor process occupy from 70MB to 100MB of 128MB available RAM. Without the Tor process running the operating system and network services use 33MB of RAM, and with Tor running it reaches 122MB of RAM. Realizing that we were near a RAM overflow we decided to use part of the USB storage as swap, fortunately after three days up the system used only 8MB of swap. Even if it's useless, we decided to keep swap as a safety measure.
 
@@ -343,7 +343,7 @@ Starting:
 Idle:
 ![alt text](https://github.com/SuperBuker/tor-openwrt/raw/master/doc/img/starting.png "CPU and Memory test: Idle")
 
-### 2.1 Middle relay bandwidth ###
+### 3.1 Middle relay bandwidth ###
 
 In our test time (4 days), the middle relay didn't had a relevant cpu uses even if this process requires encryption/decryption of data passing through the relay because our bandwidth limits were very conservatives. Most of time the process was idle and didn't employed cpu cycles because this middle relay had a very limited bandwidth compared to high speed relays.
 
@@ -359,7 +359,7 @@ Stats: Download 548.4MB, Upload 547.2MB
 
 ![alt text](https://github.com/SuperBuker/tor-openwrt/raw/master/doc/img/circuithard.png "Middle relay circuits")
 
-### 2.2 WIFI hotspot capacity ###
+### 3.2 WIFI hotspot capacity ###
 
 At present our WiFi isn't encriped because it's purpuse is to be a public WiFi. The only safety measure we have taken is to enable AP isolation, this prevents connections between WiFi clients and possible direct attacks to our users device.
 The connections between the entry relay (our router) and the guard relays chosen are encrypted. 
@@ -380,7 +380,7 @@ Download test: 450KB/s
 Download test: 275KB/s
 ![alt text](https://github.com/SuperBuker/tor-openwrt/raw/master/doc/img/down600.png "Download test: 600KB/s")
 
-## 3. Conclusion ##
+## 4. Conclusion ##
 
 When we decided to do this project, we didn't know if it was possible to use a commercial router to do all of these. We knew someone did it before, but they didn't implement both systems together. After our work and testing, we can affirm that is absolutely possible to implement it, the only requeriments is to have a "good" router and compatible with OpenWRT.
 
@@ -392,7 +392,7 @@ Concerning the security issues, Tor had some problems in the past. Someone tried
 Moxie gave a real-time demonstration of this attack that obtained a large number of passwords for all kinds of services from many users whose traffic was going through his TOR node.  <br/>
 So we can see that the very nature of decentralised and distributed communication on the TOR network brings some problems.
 
-## 3.1 "Wifi hotspot with Tor" Security issues ##
+## 4.1 "Wifi hotspot with Tor" Security issues ##
 
 The WiFi hotspot is not encrypted because it's the only way to offer a public WiFi.
 Users of this kind of WiFis should encrypt their comunications using https protocol or a VPN, at this time there is no solution to this issue on the network provider side.
@@ -405,7 +405,7 @@ The main problem of any encrypting solution is that they is necessarily an encry
 
 ![alt text](https://github.com/SuperBuker/tor-openwrt/raw/master/doc/img/torsecurity.png "Tor network with WIFI hotspot security problem")
 
-### 3.2 Middle relay implementation and viability ###
+### 4.2 Middle relay implementation and viability ###
 
 The implementation of the middle relay is quite simple if you have already set up a Tor Hotspot. It needs much more ram than a simple Tor client but the advantage is that your traffic is mixed with the relays one.
 
