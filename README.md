@@ -239,7 +239,7 @@ Nickname XXXXXX
 ContactInfo XXXXXX
 ORPort 9001
 DirPort 9030
-BridgeRelay 1
+#BridgeRelay 1
 Exitpolicy reject *:* # disable exit relay
 
 # Control port
